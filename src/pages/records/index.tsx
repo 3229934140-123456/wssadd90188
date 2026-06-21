@@ -8,13 +8,15 @@ import { formatTime } from '@/utils';
 import styles from './index.module.scss';
 
 const TIRES = ['左前轮', '右前轮', '左后轮', '右后轮'];
+const MIN_PRESSURE = 5.0;
+const MAX_PRESSURE = 12.0;
 
 const RecordsPage: React.FC = () => {
   const { records, addRecord, vehicleStatus } = useAppContext();
   const [showForm, setShowForm] = useState(false);
   const [selectedTire, setSelectedTire] = useState('左后轮');
-  const [beforePressure, setBeforePressure] = useState('7.2');
-  const [afterPressure, setAfterPressure] = useState('8.0');
+  const [beforePressure, setBeforePressure] = useState('');
+  const [afterPressure, setAfterPressure] = useState('');
   const [contactDispatch, setContactDispatch] = useState(false);
   const [notes, setNotes] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
@@ -27,10 +29,20 @@ const RecordsPage: React.FC = () => {
 
   const openForm = () => {
     const dangerTire = vehicleStatus.tires.find(t => t.status === 'danger');
+    const warningTire = vehicleStatus.tires.find(t => t.status === 'warning');
     if (dangerTire) {
       setSelectedTire(dangerTire.positionLabel);
       setBeforePressure(dangerTire.pressure.toString());
+    } else if (warningTire) {
+      setSelectedTire(warningTire.positionLabel);
+      setBeforePressure(warningTire.pressure.toString());
+    } else {
+      setBeforePressure('');
     }
+    setAfterPressure('');
+    setContactDispatch(false);
+    setNotes('');
+    setPhotos([]);
     setShowForm(true);
   };
 
@@ -49,26 +61,88 @@ const RecordsPage: React.FC = () => {
     });
   };
 
-  const submitRecord = () => {
-    if (!beforePressure || !afterPressure) {
+  const validateAndSubmit = (): boolean => {
+    if (!beforePressure || beforePressure.trim() === '') {
       Taro.showToast({
-        title: '请填写胎压数值',
+        title: '请填写补气前胎压',
         icon: 'none'
       });
+      return false;
+    }
+
+    if (!afterPressure || afterPressure.trim() === '') {
+      Taro.showToast({
+        title: '请填写补气后胎压',
+        icon: 'none'
+      });
+      return false;
+    }
+
+    const beforeVal = parseFloat(beforePressure);
+    const afterVal = parseFloat(afterPressure);
+
+    if (isNaN(beforeVal)) {
+      Taro.showToast({
+        title: '补气前胎压必须是数字',
+        icon: 'none'
+      });
+      return false;
+    }
+
+    if (isNaN(afterVal)) {
+      Taro.showToast({
+        title: '补气后胎压必须是数字',
+        icon: 'none'
+      });
+      return false;
+    }
+
+    if (beforeVal < MIN_PRESSURE || beforeVal > MAX_PRESSURE) {
+      Taro.showToast({
+        title: `补气前胎压应在${MIN_PRESSURE}-${MAX_PRESSURE}bar之间`,
+        icon: 'none'
+      });
+      return false;
+    }
+
+    if (afterVal < MIN_PRESSURE || afterVal > MAX_PRESSURE) {
+      Taro.showToast({
+        title: `补气后胎压应在${MIN_PRESSURE}-${MAX_PRESSURE}bar之间`,
+        icon: 'none'
+      });
+      return false;
+    }
+
+    if (afterVal <= beforeVal) {
+      Taro.showToast({
+        title: '补气后胎压应高于补气前',
+        icon: 'none'
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const submitRecord = () => {
+    if (!validateAndSubmit()) {
       return;
     }
+
+    const beforeVal = parseFloat(beforePressure);
+    const afterVal = parseFloat(afterPressure);
 
     const recordData = {
       time: formatTime(new Date()),
       location: vehicleStatus.route.currentLocation,
       tirePosition: selectedTire,
-      beforePressure: parseFloat(beforePressure),
-      afterPressure: parseFloat(afterPressure),
-      photos,
+      beforePressure: beforeVal,
+      afterPressure: afterVal,
+      photos: [...photos],
       contactDispatch,
       tempBefore: vehicleStatus.cargoTemp.current,
-      tempAfter: vehicleStatus.cargoTemp.target,
-      notes
+      tempAfter: vehicleStatus.cargoTemp.current,
+      notes: notes.trim()
     };
 
     addRecord(recordData);
@@ -79,16 +153,18 @@ const RecordsPage: React.FC = () => {
     });
 
     closeForm();
-    setNotes('');
-    setPhotos([]);
   };
+
+  const sortedRecords = [...records].sort((a, b) => {
+    return new Date(b.time).getTime() - new Date(a.time).getTime();
+  });
 
   return (
     <View className={styles.recordsPage}>
       <View className={styles.pageHeader}>
         <View>
           <Text className={styles.headerTitle}>处置记录</Text>
-          <Text className={styles.headerCount}>共 {records.length} 条记录</Text>
+          <Text className={styles.headerCount}>共 {sortedRecords.length} 条记录</Text>
         </View>
       </View>
 
@@ -98,13 +174,13 @@ const RecordsPage: React.FC = () => {
         refresherEnabled
         onRefresherRefresh={handleRefresh}
       >
-        {records.length === 0 ? (
+        {sortedRecords.length === 0 ? (
           <View className={styles.emptyState}>
             <Text className={styles.emptyIcon}>📋</Text>
             <Text className={styles.emptyText}>暂无处置记录</Text>
           </View>
         ) : (
-          records.map(record => (
+          sortedRecords.map(record => (
             <RecordCard key={record.id} record={record} />
           ))
         )}
@@ -148,7 +224,7 @@ const RecordsPage: React.FC = () => {
               </View>
 
               <View className={styles.formGroup}>
-                <Text className={styles.formLabel}>胎压数值</Text>
+                <Text className={styles.formLabel}>胎压数值（bar）</Text>
                 <View className={styles.pressureInputs}>
                   <View className={styles.pressureInputWrap}>
                     <Input
@@ -156,7 +232,7 @@ const RecordsPage: React.FC = () => {
                       type="digit"
                       value={beforePressure}
                       onInput={(e) => setBeforePressure(e.detail.value)}
-                      placeholder="补气前 (bar)"
+                      placeholder="补气前"
                     />
                   </View>
                   <View className={styles.pressureInputWrap}>
@@ -165,7 +241,7 @@ const RecordsPage: React.FC = () => {
                       type="digit"
                       value={afterPressure}
                       onInput={(e) => setAfterPressure(e.detail.value)}
-                      placeholder="补气后 (bar)"
+                      placeholder="补气后"
                     />
                   </View>
                 </View>

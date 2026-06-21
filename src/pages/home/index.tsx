@@ -16,10 +16,12 @@ const HomePage: React.FC = () => {
     alertSteps,
     showAlertModal,
     setShowAlertModal,
-    toggleAlertStep
+    toggleAlertStep,
+    dismissAlertTemporarily,
+    hasLinkageCondition
   } = useAppContext();
 
-  const { tires, coldMachine, cargoTemp, route, hasLinkageAlert } = vehicleStatus;
+  const { tires, coldMachine, cargoTemp, route } = vehicleStatus;
 
   const handleRefresh = useCallback(() => {
     Taro.showToast({
@@ -31,19 +33,12 @@ const HomePage: React.FC = () => {
     }, 1000);
   }, []);
 
-  React.useEffect(() => {
-    Taro.onPullDownRefresh(handleRefresh);
-    return () => {
-      Taro.stopPullDownRefresh && Taro.stopPullDownRefresh();
-    };
-  }, [handleRefresh]);
-
   const handleViewAlert = () => {
     setShowAlertModal(true);
   };
 
   const handleCloseAlert = () => {
-    setShowAlertModal(false);
+    dismissAlertTemporarily();
   };
 
   const handleGoRecord = () => {
@@ -67,7 +62,7 @@ const HomePage: React.FC = () => {
         </View>
       </View>
 
-      {hasLinkageAlert && (
+      {hasLinkageCondition && (
         <View className={styles.alertBanner} onClick={handleViewAlert}>
           <View className={styles.alertIcon}>
             <Text>!</Text>
