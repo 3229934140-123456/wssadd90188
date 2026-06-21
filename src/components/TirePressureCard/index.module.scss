@@ -1,0 +1,116 @@
+@use '@/styles/variables.scss' as *;
+
+.tireCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+  transition: all $transition-base;
+
+  &.danger {
+    border: 2rpx solid $color-error;
+    animation: pulse-danger 1.5s ease-in-out infinite;
+  }
+
+  &.warning {
+    border: 2rpx solid $color-warning;
+  }
+
+  &.normal {
+    border: 2rpx solid transparent;
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    border-color: $color-error;
+  }
+  50% {
+    box-shadow: 0 0 20rpx 8rpx rgba(239, 68, 68, 0.2);
+    border-color: $color-error-light;
+  }
+}
+
+.tireHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.positionLabel {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.statusBadge {
+  font-size: $font-size-xs;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+
+  &.normal {
+    background: $color-success-bg;
+    color: $color-success;
+  }
+
+  &.warning {
+    background: $color-warning-bg;
+    color: $color-warning;
+  }
+
+  &.danger {
+    background: $color-error-bg;
+    color: $color-error;
+    animation: badge-blink 1s ease-in-out infinite;
+  }
+}
+
+@keyframes badge-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.pressureValue {
+  font-size: 56rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.2;
+  margin-bottom: $spacing-sm;
+
+  .unit {
+    font-size: $font-size-md;
+    font-weight: $font-weight-normal;
+    color: $color-text-secondary;
+    margin-left: 4rpx;
+  }
+
+  &.danger {
+    color: $color-error;
+  }
+
+  &.warning {
+    color: $color-warning;
+  }
+}
+
+.warningTip {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.4;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.dangerTip {
+  font-size: $font-size-xs;
+  color: $color-error;
+  line-height: 1.4;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-error-bg;
+  font-weight: $font-weight-medium;
+}

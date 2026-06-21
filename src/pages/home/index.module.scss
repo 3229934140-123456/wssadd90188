@@ -1,0 +1,121 @@
+@use '@/styles/variables.scss' as *;
+
+.homePage {
+  min-height: 100vh;
+  padding-bottom: $spacing-xl;
+}
+
+.pageHeader {
+  background: linear-gradient(135deg, $color-primary 0%, $color-cold 100%);
+  padding: $spacing-lg $page-padding $spacing-xl;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+}
+
+.pageHeader::before {
+  content: '';
+  position: absolute;
+  top: -60rpx;
+  right: -60rpx;
+  width: 300rpx;
+  height: 300rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: $radius-round;
+}
+
+.vehicleInfo {
+  position: relative;
+  z-index: 1;
+}
+
+.vehicleNo {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.vehicleType {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.alertBanner {
+  margin: 0 $page-padding;
+  margin-top: -$spacing-lg;
+  background: linear-gradient(135deg, $color-error 0%, $color-warning 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  color: $color-text-white;
+  position: relative;
+  z-index: 2;
+  box-shadow: $shadow-float;
+  display: flex;
+  align-items: center;
+  animation: banner-pulse 2s ease-in-out infinite;
+}
+
+@keyframes banner-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.alertIcon {
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.alertContent {
+  flex: 1;
+}
+
+.alertTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 4rpx;
+}
+
+.alertDesc {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+}
+
+.alertBtn {
+  padding: $spacing-xs $spacing-md;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+}
+
+.section {
+  padding: 0 $page-padding;
+  margin-top: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.tiresGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+}
+
+.cardGap {
+  margin-bottom: $spacing-md;
+}
